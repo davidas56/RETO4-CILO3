@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paint App</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #f0f0f0;
+    }
+    canvas {
+      cursor: crosshair;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="paint-canvas"></canvas>
+  
+  <script>
+    var canvas = document.getElementById('paint-canvas');
+    var ctx = canvas.getContext('2d');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    var isPainting = false;
+    
+    canvas.addEventListener('mousedown', startPainting);
+    canvas.addEventListener('mouseup', stopPainting);
+    canvas.addEventListener('mousemove', paint);
+    
+    function startPainting(event) {
+      isPainting = true;
+      paint(event);
+    }
+    
+    function stopPainting() {
+      isPainting = false;
+    }
+    
+    function paint(event) {
+      if (!isPainting) return;
+      
+      var x = event.clientX;
+      var y = event.clientY;
+      var color = '#000000'; // Color predeterminado (negro)
+      
+      if (event.buttons === 1) {
+        color = '#ff0000'; // Color rojo cuando se mantiene presionado el botón izquierdo del mouse
+      }
+      
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.arc(x, y, 10, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      fetch('/paint', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'x=' + x + '&y=' + y + '&color=' + color
+      })
+      .then(function(response) {
+        console.log(response);
+      })
+      .catch(function(error) {
+        console.error(error);
+      });
+    }
+  </script>
+</body>
+</html>
